@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 142 76% 36%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 142 76% 36%;
+
+    --radius: 0.5rem;
+
+    --chart-1: 142 76% 36%;
+    --chart-2: 0 84% 60%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 142 70% 50%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142 70% 50%;
+
+    --chart-1: 142 70% 50%;
+    --chart-2: 0 84% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    /* 添加平滑过渡效果 */
+    transition: color 0.5s ease, background-color 0.5s ease;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    transition: color 0.5s ease, background-color 0.5s ease;
+  }
+
+  /* 为所有常见元素添加颜色过渡效果 */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  span,
+  div,
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  label,
+  li,
+  td,
+  th {
+    transition: color 0.5s ease, background-color 0.5s ease, border-color 0.5s ease, fill 0.5s ease, stroke 0.5s ease,
+      opacity 0.5s ease;
+  }
+
+  /* 为卡片、边框等添加过渡效果 */
+  .card,
+  .border,
+  .bg-green-50,
+  .bg-green-950\/30,
+  .bg-gray-100,
+  .bg-gray-800,
+  .border-green-100,
+  .border-green-900,
+  .border-green-200,
+  .shadow-md {
+    transition: background-color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+  }
+
+  /* 为进度条添加过渡效果 */
+  .progress,
+  .progress-bar {
+    transition: background-color 0.5s ease, width 0.5s ease;
+  }
+
+  /* 为图表元素添加过渡效果 */
+  path,
+  line,
+  rect,
+  circle {
+    transition: stroke 0.5s ease, fill 0.5s ease;
+  }
+}
+
+/* 禁用主题切换时的闪烁 */
+.no-transition {
+  transition: none !important;
+}
+
+/* 确保滑块动画不受全局过渡影响 */
+.theme-toggle-slider {
+  transition: transform 0.3s ease-in-out !important;
+}
