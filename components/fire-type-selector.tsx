@@ -79,7 +79,7 @@ export function FireTypeSelector({ value, onValueChange }: FireTypeSelectorProps
                 <tbody>
                   <tr>
                     <td className="border px-2 py-1">Fat FIRE</td>
-                    <td className="border px-2 py-1">40~60万</td>
+                    <td className="border px-2 py-1">40万以上</td>
                     <td className="border px-2 py-1">30%</td>
                     <td className="border px-2 py-1">0元</td>
                     <td className="border px-2 py-1">2%/年</td>
