@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, type ChangeEvent } from "react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,7 +20,7 @@ export function FireCalculator() {
   const [currentSavings, setCurrentSavings] = useState<number>(100000)
   const [annualIncome, setAnnualIncome] = useState<number>(100000)
   const [annualExpenses, setAnnualExpenses] = useState<number>(40000)
-  // Annual savings is calculated dynamically
+  // Rate inputs
   const [incomeGrowthRate, setIncomeGrowthRate] = useState<number>(2)
   const [investmentReturn, setInvestmentReturn] = useState<number>(7)
   const [inflationRate, setInflationRate] = useState<number>(3)
@@ -42,6 +42,48 @@ export function FireCalculator() {
     setPartTimeIncome(defaults.partTimeIncome)
     setIncomeGrowthRate(defaults.incomeGrowthRate)
   }, [selectedFireType])
+
+  // Handle number input changes with leading zero removal
+  const handleNumberChange = (e: ChangeEvent<HTMLInputElement>, setter: (value: number) => void) => {
+    const value = e.target.value
+
+    // Remove leading zeros (except for "0" itself or decimal values like "0.x")
+    let cleanedValue = value
+    if (value.length > 1 && value.startsWith("0") && !value.startsWith("0.")) {
+      cleanedValue = value.replace(/^0+/, "")
+    }
+
+    // Update the input value if it's a valid number or empty
+    if (cleanedValue === "" || !isNaN(Number(cleanedValue))) {
+      e.target.value = cleanedValue
+      setter(cleanedValue === "" ? 0 : Number(cleanedValue))
+    }
+  }
+
+  // Handle percentage input changes
+  const handlePercentageChange = (
+    e: ChangeEvent<HTMLInputElement>,
+    setter: (value: number) => void,
+    min: number,
+    max: number,
+  ) => {
+    let value = e.target.value
+
+    // Remove % symbol if present
+    if (value.includes("%")) {
+      value = value.replace("%", "")
+    }
+
+    // Check if the value is a valid number
+    if (value === "" || !isNaN(Number(value))) {
+      const numValue = value === "" ? 0 : Number(value)
+
+      // Apply min/max constraints
+      if (numValue >= min && numValue <= max) {
+        setter(numValue)
+      }
+    }
+  }
 
   // Validate inputs
   const validateInputs = () => {
@@ -157,9 +199,10 @@ export function FireCalculator() {
                 <Label htmlFor="currentAge">当前年龄</Label>
                 <Input
                   id="currentAge"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={currentAge}
-                  onChange={(e) => setCurrentAge(Number(e.target.value))}
+                  onChange={(e) => handleNumberChange(e, setCurrentAge)}
                   className={errors.currentAge ? "border-red-500" : ""}
                 />
                 {errors.currentAge && <p className="text-xs text-red-500">{errors.currentAge}</p>}
@@ -169,9 +212,10 @@ export function FireCalculator() {
                 <Label htmlFor="targetRetirementAge">目标退休年龄</Label>
                 <Input
                   id="targetRetirementAge"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={targetRetirementAge}
-                  onChange={(e) => setTargetRetirementAge(Number(e.target.value))}
+                  onChange={(e) => handleNumberChange(e, setTargetRetirementAge)}
                   className={errors.targetRetirementAge ? "border-red-500" : ""}
                 />
                 {errors.targetRetirementAge && <p className="text-xs text-red-500">{errors.targetRetirementAge}</p>}
@@ -183,9 +227,10 @@ export function FireCalculator() {
               <Label htmlFor="currentSavings">当前储蓄</Label>
               <Input
                 id="currentSavings"
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={currentSavings}
-                onChange={(e) => setCurrentSavings(Number(e.target.value))}
+                onChange={(e) => handleNumberChange(e, setCurrentSavings)}
                 className={errors.currentSavings ? "border-red-500" : ""}
               />
               {errors.currentSavings && <p className="text-xs text-red-500">{errors.currentSavings}</p>}
@@ -197,9 +242,10 @@ export function FireCalculator() {
                 <Label htmlFor="annualIncome">年收入</Label>
                 <Input
                   id="annualIncome"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={annualIncome}
-                  onChange={(e) => setAnnualIncome(Number(e.target.value))}
+                  onChange={(e) => handleNumberChange(e, setAnnualIncome)}
                   className={errors.annualIncome ? "border-red-500" : ""}
                 />
                 {errors.annualIncome && <p className="text-xs text-red-500">{errors.annualIncome}</p>}
@@ -210,9 +256,10 @@ export function FireCalculator() {
                 <Label htmlFor="annualExpenses">年支出</Label>
                 <Input
                   id="annualExpenses"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={annualExpenses}
-                  onChange={(e) => setAnnualExpenses(Number(e.target.value))}
+                  onChange={(e) => handleNumberChange(e, setAnnualExpenses)}
                   className={errors.annualExpenses ? "border-red-500" : ""}
                 />
                 {errors.annualExpenses && <p className="text-xs text-red-500">{errors.annualExpenses}</p>}
@@ -226,9 +273,10 @@ export function FireCalculator() {
                 <Label htmlFor="partTimeIncome">兼职收入</Label>
                 <Input
                   id="partTimeIncome"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={partTimeIncome}
-                  onChange={(e) => setPartTimeIncome(Number(e.target.value))}
+                  onChange={(e) => handleNumberChange(e, setPartTimeIncome)}
                   className={errors.partTimeIncome ? "border-red-500" : ""}
                 />
                 {errors.partTimeIncome && <p className="text-xs text-red-500">{errors.partTimeIncome}</p>}
@@ -236,7 +284,7 @@ export function FireCalculator() {
               </div>
             )}
 
-            {/* Rate Sliders with 0.1% granularity */}
+            {/* Rate Inputs with both slider and direct input */}
             {selectedFireType !== "coast" && (
               <div className="space-y-2">
                 <Label htmlFor="incomeGrowthRate">收入年增长率 (%)</Label>
@@ -250,7 +298,15 @@ export function FireCalculator() {
                     onValueChange={(value) => setIncomeGrowthRate(value[0])}
                     className={`flex-1 ${errors.incomeGrowthRate ? "border-red-500" : ""}`}
                   />
-                  <span className="w-16 text-center font-medium">{incomeGrowthRate.toFixed(1)}%</span>
+                  <div className="relative w-20">
+                    <Input
+                      type="text"
+                      value={`${incomeGrowthRate.toFixed(1)}`}
+                      onChange={(e) => handlePercentageChange(e, setIncomeGrowthRate, -20, 50)}
+                      className="pr-6 text-right"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2">%</span>
+                  </div>
                 </div>
                 {errors.incomeGrowthRate && <p className="text-xs text-red-500">{errors.incomeGrowthRate}</p>}
               </div>
@@ -268,7 +324,15 @@ export function FireCalculator() {
                   onValueChange={(value) => setInvestmentReturn(value[0])}
                   className={`flex-1 ${errors.investmentReturn ? "border-red-500" : ""}`}
                 />
-                <span className="w-16 text-center font-medium">{investmentReturn.toFixed(1)}%</span>
+                <div className="relative w-20">
+                  <Input
+                    type="text"
+                    value={`${investmentReturn.toFixed(1)}`}
+                    onChange={(e) => handlePercentageChange(e, setInvestmentReturn, -20, 20)}
+                    className="pr-6 text-right"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2">%</span>
+                </div>
               </div>
               {errors.investmentReturn && <p className="text-xs text-red-500">{errors.investmentReturn}</p>}
             </div>
@@ -285,7 +349,15 @@ export function FireCalculator() {
                   onValueChange={(value) => setInflationRate(value[0])}
                   className={`flex-1 ${errors.inflationRate ? "border-red-500" : ""}`}
                 />
-                <span className="w-16 text-center font-medium">{inflationRate.toFixed(1)}%</span>
+                <div className="relative w-20">
+                  <Input
+                    type="text"
+                    value={`${inflationRate.toFixed(1)}`}
+                    onChange={(e) => handlePercentageChange(e, setInflationRate, -5, 15)}
+                    className="pr-6 text-right"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2">%</span>
+                </div>
               </div>
               {errors.inflationRate && <p className="text-xs text-red-500">{errors.inflationRate}</p>}
             </div>
