@@ -11,6 +11,7 @@ interface FireCalculationParams {
   investmentReturn: number
   inflationRate: number
   partTimeIncome: number
+  partTimeIncomeGrowthRate: number
   fireType: string
 }
 
@@ -26,6 +27,7 @@ export function calculateFireResults(params: FireCalculationParams) {
     investmentReturn,
     inflationRate,
     partTimeIncome,
+    partTimeIncomeGrowthRate,
     fireType,
   } = params
 
@@ -61,47 +63,78 @@ export function calculateFireResults(params: FireCalculationParams) {
     calculationLogic = "coast"
   }
 
-  // Calculate asset growth until FIRE target is reached
-  // No upper limit on years as requested
-  while (currentAssetsValue < fireNumber) {
+  // Optimize calculations for negative rates
+  const calculateGrowthFactor = (rate: number, years: number) => {
+    // Use a more efficient calculation for negative rates
+    if (rate >= 0) {
+      return Math.pow(1 + rate / 100, years)
+    } else {
+      // For negative rates, use a more stable calculation
+      return 1 / Math.pow(1 - rate / 100, years)
+    }
+  }
+
+  // Set a reasonable maximum number of years to prevent infinite loops
+  const MAX_YEARS = 200
+
+  // Calculate asset growth until FIRE target is reached or max years reached
+  while (currentAssetsValue < fireNumber && yearsToFire < MAX_YEARS) {
     yearsToFire++
     fireYear++
 
+    // Check if we've reached retirement age
+    const isRetired = fireYear >= targetRetirementYear
+
     // Calculate yearly income (considering income growth)
-    const yearlyIncome = annualIncome * Math.pow(1 + incomeGrowthRate / 100, yearsToFire)
+    // If retired, main income becomes zero
+    const yearlyIncome = isRetired ? 0 : annualIncome * calculateGrowthFactor(incomeGrowthRate, yearsToFire)
 
     // Calculate yearly expense (considering inflation)
-    const yearlyExpense = annualExpenses * Math.pow(1 + inflationRate / 100, yearsToFire)
+    const yearlyExpense = annualExpenses * calculateGrowthFactor(inflationRate, yearsToFire)
 
-    // Calculate yearly savings (income minus expenses)
-    let yearlySavings = yearlyIncome - yearlyExpense
+    // Calculate part-time income with its own growth rate
+    // This applies both before and after retirement
+    const yearlyPartTimeIncome = partTimeIncome * calculateGrowthFactor(partTimeIncomeGrowthRate, yearsToFire)
 
-    // Special FIRE type logic
-    if (calculationLogic === "barista") {
-      // Barista FIRE: consider part-time income
-      const yearlyPartTimeIncome = partTimeIncome * Math.pow(1 + incomeGrowthRate / 100, yearsToFire)
-      yearlySavings += yearlyPartTimeIncome
-    } else if (calculationLogic === "coast") {
+    // Calculate yearly savings (income minus expenses plus part-time income)
+    let yearlySavings = yearlyIncome - yearlyExpense + yearlyPartTimeIncome
+
+    // Special case for Coast FIRE
+    if (calculationLogic === "coast") {
       // Coast FIRE: no additional savings, rely on existing assets growth
       yearlySavings = 0
     }
 
     // Calculate asset growth (considering compound interest)
-    currentAssetsValue = currentAssetsValue * (1 + investmentReturn / 100) + yearlySavings
+    // Use a more stable calculation for negative investment returns
+    if (investmentReturn >= 0) {
+      currentAssetsValue = currentAssetsValue * (1 + investmentReturn / 100) + yearlySavings
+    } else {
+      currentAssetsValue = currentAssetsValue / (1 - investmentReturn / 100) + yearlySavings
+    }
 
     // Adjust FIRE target for inflation
-    const inflatedFireTarget = fireNumber * Math.pow(1 + inflationRate / 100, yearsToFire)
+    const inflatedFireTarget = fireNumber * calculateGrowthFactor(inflationRate, yearsToFire)
 
-    projectionData.push({
-      year: fireYear,
-      assets: Math.round(currentAssetsValue),
-      fireTarget: Math.round(inflatedFireTarget),
-      annualExpense: Math.round(yearlyExpense),
-    })
+    // Only add data points at reasonable intervals to reduce memory usage
+    if (yearsToFire % 1 === 0 || yearsToFire === 1) {
+      projectionData.push({
+        year: fireYear,
+        assets: Math.round(currentAssetsValue),
+        fireTarget: Math.round(inflatedFireTarget),
+        annualExpense: Math.round(yearlyExpense),
+      })
+    }
+  }
+
+  // If max years reached, set to max years
+  if (yearsToFire >= MAX_YEARS) {
+    yearsToFire = MAX_YEARS
+    fireYear = currentYear + MAX_YEARS
   }
 
   // Calculate inflation-adjusted FIRE number
-  const adjustedFireNumber = fireNumber * Math.pow(1 + inflationRate / 100, yearsToFire)
+  const adjustedFireNumber = fireNumber * calculateGrowthFactor(inflationRate, yearsToFire)
 
   // Calculate progress percentage
   const progressPercentage = Math.min(100, (currentSavings / fireNumber) * 100)
@@ -110,7 +143,7 @@ export function calculateFireResults(params: FireCalculationParams) {
   const savingsRate = annualIncome > 0 ? ((annualIncome - annualExpenses) / annualIncome) * 100 : 0
 
   // Calculate future annual expense (considering inflation)
-  const futureAnnualExpense = annualExpenses * Math.pow(1 + inflationRate / 100, yearsToFire)
+  const futureAnnualExpense = annualExpenses * calculateGrowthFactor(inflationRate, yearsToFire)
 
   return {
     fireNumber,

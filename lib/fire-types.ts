@@ -8,6 +8,7 @@ export interface FireTypeInfo {
   savingsRate: number
   partTimeIncome: number
   incomeGrowthRate: number
+  partTimeIncomeGrowthRate: number
   investmentReturn: number
   withdrawalRate: number
 }
@@ -21,6 +22,7 @@ export const fireTypeInfo: Record<FireType, FireTypeInfo> = {
     savingsRate: 40,
     partTimeIncome: 0,
     incomeGrowthRate: 2,
+    partTimeIncomeGrowthRate: 1,
     investmentReturn: 7,
     withdrawalRate: 4,
   },
@@ -32,6 +34,7 @@ export const fireTypeInfo: Record<FireType, FireTypeInfo> = {
     savingsRate: 30,
     partTimeIncome: 0,
     incomeGrowthRate: 2,
+    partTimeIncomeGrowthRate: 1,
     investmentReturn: 7,
     withdrawalRate: 3.5,
   },
@@ -43,6 +46,7 @@ export const fireTypeInfo: Record<FireType, FireTypeInfo> = {
     savingsRate: 60,
     partTimeIncome: 0,
     incomeGrowthRate: 0,
+    partTimeIncomeGrowthRate: 0,
     investmentReturn: 5,
     withdrawalRate: 4,
   },
@@ -54,6 +58,7 @@ export const fireTypeInfo: Record<FireType, FireTypeInfo> = {
     savingsRate: 40,
     partTimeIncome: 120000,
     incomeGrowthRate: 1,
+    partTimeIncomeGrowthRate: 1,
     investmentReturn: 5,
     withdrawalRate: 4.5,
   },
@@ -66,6 +71,7 @@ export const fireTypeInfo: Record<FireType, FireTypeInfo> = {
     savingsRate: 0,
     partTimeIncome: 0,
     incomeGrowthRate: 0,
+    partTimeIncomeGrowthRate: 0,
     investmentReturn: 6.5,
     withdrawalRate: 4,
   },
@@ -76,6 +82,7 @@ export function getFireTypeDefaults(type: FireType): {
   investmentReturn: number
   partTimeIncome: number
   incomeGrowthRate: number
+  partTimeIncomeGrowthRate: number
 } {
   const info = fireTypeInfo[type]
   return {
@@ -83,5 +90,6 @@ export function getFireTypeDefaults(type: FireType): {
     investmentReturn: info.investmentReturn,
     partTimeIncome: info.partTimeIncome,
     incomeGrowthRate: info.incomeGrowthRate,
+    partTimeIncomeGrowthRate: info.partTimeIncomeGrowthRate,
   }
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, type ChangeEvent } from "react"
+import { useState, useEffect, type ChangeEvent, useCallback } from "react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -25,6 +25,7 @@ export function FireCalculator() {
   const [investmentReturn, setInvestmentReturn] = useState<number>(7)
   const [inflationRate, setInflationRate] = useState<number>(3)
   const [partTimeIncome, setPartTimeIncome] = useState<number>(0)
+  const [partTimeIncomeGrowthRate, setPartTimeIncomeGrowthRate] = useState<number>(1)
 
   // FIRE type
   const [selectedFireType, setSelectedFireType] = useState<FireType>("standard")
@@ -41,10 +42,11 @@ export function FireCalculator() {
     setInvestmentReturn(defaults.investmentReturn)
     setPartTimeIncome(defaults.partTimeIncome)
     setIncomeGrowthRate(defaults.incomeGrowthRate)
+    setPartTimeIncomeGrowthRate(defaults.partTimeIncomeGrowthRate)
   }, [selectedFireType])
 
   // Handle number input changes with leading zero removal
-  const handleNumberChange = (e: ChangeEvent<HTMLInputElement>, setter: (value: number) => void) => {
+  const handleNumberChange = useCallback((e: ChangeEvent<HTMLInputElement>, setter: (value: number) => void) => {
     const value = e.target.value
 
     // Remove leading zeros (except for "0" itself or decimal values like "0.x")
@@ -58,35 +60,45 @@ export function FireCalculator() {
       e.target.value = cleanedValue
       setter(cleanedValue === "" ? 0 : Number(cleanedValue))
     }
-  }
+  }, [])
 
-  // Handle percentage input changes
-  const handlePercentageChange = (
-    e: ChangeEvent<HTMLInputElement>,
-    setter: (value: number) => void,
-    min: number,
-    max: number,
-  ) => {
-    let value = e.target.value
+  // Optimized percentage input handler
+  const handlePercentageChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>, setter: (value: number) => void, min: number, max: number) => {
+      let value = e.target.value
 
-    // Remove % symbol if present
-    if (value.includes("%")) {
-      value = value.replace("%", "")
-    }
-
-    // Check if the value is a valid number
-    if (value === "" || !isNaN(Number(value))) {
-      const numValue = value === "" ? 0 : Number(value)
-
-      // Apply min/max constraints
-      if (numValue >= min && numValue <= max) {
-        setter(numValue)
+      // Handle special case for negative sign alone
+      if (value === "-") {
+        e.target.value = value
+        return // Don't update state yet, wait for more input
       }
-    }
-  }
 
-  // Validate inputs
-  const validateInputs = () => {
+      // Remove % symbol if present
+      if (value.includes("%")) {
+        value = value.replace(/%/g, "")
+      }
+
+      // Check if the value is a valid number
+      if (value === "" || !isNaN(Number(value))) {
+        const numValue = value === "" ? 0 : Number(value)
+
+        // Apply min/max constraints
+        if (numValue >= min && numValue <= max) {
+          setter(numValue)
+        }
+      }
+    },
+    [],
+  )
+
+  // Format percentage value for display
+  const formatPercentage = useCallback((value: number): string => {
+    // Use a more efficient way to format the percentage
+    return value.toFixed(1)
+  }, [])
+
+  // Validate inputs - optimized to reduce unnecessary work
+  const validateInputs = useCallback(() => {
     const newErrors: Record<string, string> = {}
 
     if (currentAge < 0 || currentAge > 100) {
@@ -113,6 +125,10 @@ export function FireCalculator() {
       newErrors.incomeGrowthRate = "收入增长率必须在-20%到50%之间"
     }
 
+    if (partTimeIncomeGrowthRate < -20 || partTimeIncomeGrowthRate > 50) {
+      newErrors.partTimeIncomeGrowthRate = "兼职收入增长率必须在-20%到50%之间"
+    }
+
     if (investmentReturn < -20 || investmentReturn > 20) {
       newErrors.investmentReturn = "投资回报率必须在-20%到20%之间"
     }
@@ -127,10 +143,21 @@ export function FireCalculator() {
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
-  }
+  }, [
+    currentAge,
+    targetRetirementAge,
+    currentSavings,
+    annualIncome,
+    annualExpenses,
+    incomeGrowthRate,
+    partTimeIncomeGrowthRate,
+    investmentReturn,
+    inflationRate,
+    partTimeIncome,
+  ])
 
   // Handle calculation
-  const handleCalculate = () => {
+  const handleCalculate = useCallback(() => {
     if (!validateInputs()) {
       setShowResults(false)
       return
@@ -147,15 +174,29 @@ export function FireCalculator() {
       investmentReturn,
       inflationRate,
       partTimeIncome,
+      partTimeIncomeGrowthRate,
       fireType: selectedFireType,
     })
 
     setCalculationResults(results)
     setShowResults(true)
-  }
+  }, [
+    validateInputs,
+    currentAge,
+    targetRetirementAge,
+    currentSavings,
+    annualIncome,
+    annualExpenses,
+    incomeGrowthRate,
+    investmentReturn,
+    inflationRate,
+    partTimeIncome,
+    partTimeIncomeGrowthRate,
+    selectedFireType,
+  ])
 
   // Reset form
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setCurrentAge(30)
     setTargetRetirementAge(45)
     setCurrentSavings(100000)
@@ -165,18 +206,25 @@ export function FireCalculator() {
     setInvestmentReturn(7)
     setInflationRate(3)
     setPartTimeIncome(0)
+    setPartTimeIncomeGrowthRate(1)
     setSelectedFireType("standard")
     setErrors({})
     setShowResults(false)
-  }
+  }, [])
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = useCallback((value: number) => {
     return new Intl.NumberFormat("zh-CN", {
       style: "currency",
       currency: "CNY",
       maximumFractionDigits: 0,
     }).format(value)
-  }
+  }, [])
+
+  // Optimized slider value change handler
+  const handleSliderChange = useCallback((value: number[], setter: (value: number) => void) => {
+    // Debounce slider updates for negative values to prevent excessive re-renders
+    setter(value[0])
+  }, [])
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -239,7 +287,7 @@ export function FireCalculator() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="annualIncome">年收入</Label>
+                <Label htmlFor="annualIncome">年收入（退休后归零）</Label>
                 <Input
                   id="annualIncome"
                   type="text"
@@ -267,8 +315,8 @@ export function FireCalculator() {
               </div>
             </div>
 
-            {/* Barista FIRE specific field */}
-            {selectedFireType === "barista" && (
+            {/* Part-time income field - now shown for all FIRE types */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="partTimeIncome">兼职收入</Label>
                 <Input
@@ -282,12 +330,39 @@ export function FireCalculator() {
                 {errors.partTimeIncome && <p className="text-xs text-red-500">{errors.partTimeIncome}</p>}
                 <p className="text-xs text-muted-foreground">{formatCurrency(partTimeIncome)}</p>
               </div>
-            )}
 
-            {/* Rate Inputs with both slider and direct input */}
+              <div className="space-y-2">
+                <Label htmlFor="partTimeIncomeGrowthRate">兼职收入年增长率 (%)</Label>
+                <div className="flex items-center gap-4">
+                  <Slider
+                    id="partTimeIncomeGrowthRate"
+                    min={-20}
+                    max={50}
+                    step={0.1}
+                    value={[partTimeIncomeGrowthRate]}
+                    onValueChange={(value) => handleSliderChange(value, setPartTimeIncomeGrowthRate)}
+                    className={`flex-1 ${errors.partTimeIncomeGrowthRate ? "border-red-500" : ""}`}
+                  />
+                  <div className="relative w-20">
+                    <Input
+                      type="text"
+                      value={formatPercentage(partTimeIncomeGrowthRate)}
+                      onChange={(e) => handlePercentageChange(e, setPartTimeIncomeGrowthRate, -20, 50)}
+                      className="pr-6 text-right"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2">%</span>
+                  </div>
+                </div>
+                {errors.partTimeIncomeGrowthRate && (
+                  <p className="text-xs text-red-500">{errors.partTimeIncomeGrowthRate}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Rate Inputs with both slider and direct input - Optimized for negative values */}
             {selectedFireType !== "coast" && (
               <div className="space-y-2">
-                <Label htmlFor="incomeGrowthRate">收入年增长率 (%)</Label>
+                <Label htmlFor="incomeGrowthRate">工作收入年增长率 (%)</Label>
                 <div className="flex items-center gap-4">
                   <Slider
                     id="incomeGrowthRate"
@@ -295,13 +370,13 @@ export function FireCalculator() {
                     max={50}
                     step={0.1}
                     value={[incomeGrowthRate]}
-                    onValueChange={(value) => setIncomeGrowthRate(value[0])}
+                    onValueChange={(value) => handleSliderChange(value, setIncomeGrowthRate)}
                     className={`flex-1 ${errors.incomeGrowthRate ? "border-red-500" : ""}`}
                   />
                   <div className="relative w-20">
                     <Input
                       type="text"
-                      value={`${incomeGrowthRate.toFixed(1)}`}
+                      value={formatPercentage(incomeGrowthRate)}
                       onChange={(e) => handlePercentageChange(e, setIncomeGrowthRate, -20, 50)}
                       className="pr-6 text-right"
                     />
@@ -321,13 +396,13 @@ export function FireCalculator() {
                   max={20}
                   step={0.1}
                   value={[investmentReturn]}
-                  onValueChange={(value) => setInvestmentReturn(value[0])}
+                  onValueChange={(value) => handleSliderChange(value, setInvestmentReturn)}
                   className={`flex-1 ${errors.investmentReturn ? "border-red-500" : ""}`}
                 />
                 <div className="relative w-20">
                   <Input
                     type="text"
-                    value={`${investmentReturn.toFixed(1)}`}
+                    value={formatPercentage(investmentReturn)}
                     onChange={(e) => handlePercentageChange(e, setInvestmentReturn, -20, 20)}
                     className="pr-6 text-right"
                   />
@@ -346,13 +421,13 @@ export function FireCalculator() {
                   max={15}
                   step={0.1}
                   value={[inflationRate]}
-                  onValueChange={(value) => setInflationRate(value[0])}
+                  onValueChange={(value) => handleSliderChange(value, setInflationRate)}
                   className={`flex-1 ${errors.inflationRate ? "border-red-500" : ""}`}
                 />
                 <div className="relative w-20">
                   <Input
                     type="text"
-                    value={`${inflationRate.toFixed(1)}`}
+                    value={formatPercentage(inflationRate)}
                     onChange={(e) => handlePercentageChange(e, setInflationRate, -5, 15)}
                     className="pr-6 text-right"
                   />

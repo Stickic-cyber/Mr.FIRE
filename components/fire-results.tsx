@@ -111,7 +111,10 @@ export function FireResults({ results }: FireResultsProps) {
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-muted-foreground">预计达到财务自由的年份</h3>
             <p className="text-2xl font-bold text-primary">{results.fireYear} 年</p>
-            <p className="text-xs text-muted-foreground">目标退休年份: {results.targetRetirementYear} 年</p>
+            <p className="text-xs text-muted-foreground">
+              目标退休年份: {results.targetRetirementYear} 年
+              {results.targetRetirementYear < results.fireYear ? " (提前退休)" : ""}
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -230,6 +233,9 @@ export function FireResults({ results }: FireResultsProps) {
             根据您的财务状况，您需要 {formatCurrency(results.fireNumber)} 才能实现财务自由。 考虑到通货膨胀因素，在{" "}
             {results.fireYear} 年时，您需要积累 {formatCurrency(results.adjustedFireNumber)}。 按照您当前的储蓄率(
             {Math.round(results.savingsRate)}%)和投资回报预期，您可能在 {results.yearsToFire} 年后达到这一目标。
+            {results.targetRetirementYear < results.fireYear
+              ? ` 需要注意的是，您计划在 ${results.targetRetirementYear} 年退休，但此时您的资产还不足以支持完全退休。您可能需要考虑增加当前储蓄、提高投资回报率或依靠退休后的兼职收入来弥补差距。`
+              : ` 您计划在 ${results.targetRetirementYear} 年退休，届时您的资产将足以支持您的退休生活。`}
           </p>
         </div>
 
