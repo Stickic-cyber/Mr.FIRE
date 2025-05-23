@@ -25,6 +25,7 @@ export default function RootLayout({
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3252437314759296"
           crossOrigin="anonymous"
+          strategy="beforeInteractive"
         />
       </head>
       <body className={inter.className}>
