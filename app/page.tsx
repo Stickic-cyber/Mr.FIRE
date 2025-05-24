@@ -1,6 +1,6 @@
 import { FireCalculator } from "@/components/fire-calculator"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { Github } from "lucide-react"
+import { Github, ExternalLink } from "lucide-react"
 import Link from "next/link"
 
 export default function Home() {
@@ -20,7 +20,7 @@ export default function Home() {
       </div>
 
       <footer className="mt-16 pt-8 border-t">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <h3 className="text-lg font-semibold text-primary mb-4">关于我</h3>
             <p className="text-muted-foreground mb-4 italic">
@@ -111,6 +111,23 @@ export default function Home() {
                 </svg>
                 <span className="text-muted-foreground">公众号搜: 人工智能QA</span>
               </div>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-primary mb-4">友情链接</h3>
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center">
+                <ExternalLink className="h-4 w-4 mr-2" />
+                <Link
+                  href="http://app.gjzwfw.gov.cn/jmopen/webapp/html5/yldycs/index.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  国家养老金计算器
+                </Link>
+              </div>
+              <p className="text-xs text-muted-foreground ml-6">官方养老金测算工具，帮您了解退休后的基本保障</p>
             </div>
           </div>
         </div>

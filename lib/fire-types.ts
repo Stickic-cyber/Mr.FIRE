@@ -9,8 +9,13 @@ export interface FireTypeInfo {
   partTimeIncome: number
   incomeGrowthRate: number
   partTimeIncomeGrowthRate: number
+  passiveIncome: number
+  passiveIncomeGrowthRate: number
+  investmentAmount: number
   investmentReturn: number
   withdrawalRate: number
+  pension: number
+  pensionGrowthRate: number
 }
 
 export const fireTypeInfo: Record<FireType, FireTypeInfo> = {
@@ -23,8 +28,13 @@ export const fireTypeInfo: Record<FireType, FireTypeInfo> = {
     partTimeIncome: 0,
     incomeGrowthRate: 2,
     partTimeIncomeGrowthRate: 1,
+    passiveIncome: 0,
+    passiveIncomeGrowthRate: 2,
+    investmentAmount: 0,
     investmentReturn: 7,
     withdrawalRate: 4,
+    pension: 0,
+    pensionGrowthRate: 3,
   },
   fat: {
     label: "Fat FIRE",
@@ -35,8 +45,13 @@ export const fireTypeInfo: Record<FireType, FireTypeInfo> = {
     partTimeIncome: 0,
     incomeGrowthRate: 2,
     partTimeIncomeGrowthRate: 1,
+    passiveIncome: 0,
+    passiveIncomeGrowthRate: 2,
+    investmentAmount: 0,
     investmentReturn: 7,
     withdrawalRate: 3.5,
+    pension: 0,
+    pensionGrowthRate: 3,
   },
   lean: {
     label: "Lean FIRE",
@@ -47,8 +62,13 @@ export const fireTypeInfo: Record<FireType, FireTypeInfo> = {
     partTimeIncome: 0,
     incomeGrowthRate: 0,
     partTimeIncomeGrowthRate: 0,
+    passiveIncome: 0,
+    passiveIncomeGrowthRate: 1,
+    investmentAmount: 0,
     investmentReturn: 5,
     withdrawalRate: 4,
+    pension: 0,
+    pensionGrowthRate: 3,
   },
   barista: {
     label: "Barista FIRE",
@@ -59,8 +79,13 @@ export const fireTypeInfo: Record<FireType, FireTypeInfo> = {
     partTimeIncome: 120000,
     incomeGrowthRate: 1,
     partTimeIncomeGrowthRate: 1,
+    passiveIncome: 0,
+    passiveIncomeGrowthRate: 1,
+    investmentAmount: 0,
     investmentReturn: 5,
     withdrawalRate: 4.5,
+    pension: 0,
+    pensionGrowthRate: 3,
   },
   coast: {
     label: "Coast FIRE",
@@ -72,8 +97,13 @@ export const fireTypeInfo: Record<FireType, FireTypeInfo> = {
     partTimeIncome: 0,
     incomeGrowthRate: 0,
     partTimeIncomeGrowthRate: 0,
+    passiveIncome: 0,
+    passiveIncomeGrowthRate: 0,
+    investmentAmount: 0,
     investmentReturn: 6.5,
     withdrawalRate: 4,
+    pension: 0,
+    pensionGrowthRate: 3,
   },
 }
 
@@ -83,6 +113,11 @@ export function getFireTypeDefaults(type: FireType): {
   partTimeIncome: number
   incomeGrowthRate: number
   partTimeIncomeGrowthRate: number
+  passiveIncome: number
+  passiveIncomeGrowthRate: number
+  investmentAmount: number
+  pension: number
+  pensionGrowthRate: number
 } {
   const info = fireTypeInfo[type]
   return {
@@ -91,5 +126,10 @@ export function getFireTypeDefaults(type: FireType): {
     partTimeIncome: info.partTimeIncome,
     incomeGrowthRate: info.incomeGrowthRate,
     partTimeIncomeGrowthRate: info.partTimeIncomeGrowthRate,
+    passiveIncome: info.passiveIncome,
+    passiveIncomeGrowthRate: info.passiveIncomeGrowthRate,
+    investmentAmount: info.investmentAmount,
+    pension: info.pension,
+    pensionGrowthRate: info.pensionGrowthRate,
   }
 }
